@@ -1,0 +1,67 @@
+if (isModule) {
+    apply plugin: 'com.android.library'
+} else {
+    apply plugin: 'com.android.application'
+}
+
+android {
+    compileSdkVersion rootProject.ext.android["compileSdkVersion"]
+    buildToolsVersion rootProject.ext.android["buildToolsVersion"]
+    useLibrary 'org.apache.http.legacy'
+
+    compileOptions {
+        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_1_8
+    }
+
+    defaultConfig {
+        minSdkVersion rootProject.ext.android["minSdkVersion"]
+        targetSdkVersion rootProject.ext.android["targetSdkVersion"]
+        versionCode 1
+        versionName "1.0"
+
+
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments = [ AROUTER_MODULE_NAME : project.getName() ]
+            }
+        }
+
+        //添加一条 boolean类型的变量
+        buildConfigField("boolean","isModule",String.valueOf(isModule))
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        //资源配置
+        sourceSets{
+            main{
+                //在组件模式下 使用不同的manifest文件
+                if(!isModule){
+                    manifest.srcFile 'src/main/application/AndroidManifest.xml'
+                    java.srcDirs 'src/main/application/java','src/main/application/java'
+
+                }else{
+                    manifest.srcFile 'src/main/AndroidManifest.xml'
+                }
+            }
+        }
+
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    implementation project(path: ':componentlib')
+    implementation 'org.jetbrains:annotations:15.0'
+    api rootProject.ext.dependencies["arouter"]
+    annotationProcessor rootProject.ext.dependencies["arouter-compiler"]
+}
